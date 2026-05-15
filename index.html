@@ -1,231 +1,874 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <title>20 крупнейших нефтяных месторождений России</title>
-<meta name="description" content="Интерактивная карта и обзор крупнейших нефтяных месторождений России">
 
-<!-- Leaflet -->
+<meta name="description"
+content="Интерактивная карта крупнейших нефтяных месторождений России. Подробная информация, запасы, история открытия и крупнейшие нефтяные проекты РФ."/>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0f172a;
-  color:#e2e8f0;
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    background:#020617;
+    color:white;
+    overflow-x:hidden;
+}
+
+/* =========================
+SCROLLBAR
+========================= */
+
+::-webkit-scrollbar{
+    width:10px;
+}
+
+::-webkit-scrollbar-track{
+    background:#020617;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#334155;
+    border-radius:20px;
+}
+
+/* =========================
+BACKGROUND EFFECTS
+========================= */
+
+.bg-glow{
+    position:fixed;
+    width:700px;
+    height:700px;
+    border-radius:50%;
+    background:rgba(56,189,248,.08);
+    filter:blur(120px);
+    top:-250px;
+    right:-250px;
+    z-index:-1;
+}
+
+.bg-glow2{
+    position:fixed;
+    width:600px;
+    height:600px;
+    border-radius:50%;
+    background:rgba(14,165,233,.06);
+    filter:blur(120px);
+    bottom:-250px;
+    left:-250px;
+    z-index:-1;
+}
+
+/* =========================
+HEADER
+========================= */
+
+.hero{
+    height:80vh;
+    background:
+    linear-gradient(rgba(0,0,0,.75), rgba(0,0,0,.85)),
+    url('https://images.unsplash.com/photo-1513828583688-c52646db42da?q=80&w=2000');
+    background-size:cover;
+    background-position:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:20px;
+    position:relative;
+}
+
+.hero::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to bottom,transparent,#020617);
+}
+
+.hero-content{
+    position:relative;
+    z-index:2;
+    max-width:1000px;
+}
+
+.hero-badge{
+    display:inline-block;
+    padding:10px 18px;
+    background:rgba(15,23,42,.8);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:999px;
+    margin-bottom:25px;
+    color:#38bdf8;
+    backdrop-filter:blur(10px);
+}
+
+.hero h1{
+    font-size:72px;
+    line-height:1.05;
+    margin-bottom:25px;
+    font-weight:800;
+}
+
+.hero p{
+    font-size:22px;
+    line-height:1.8;
+    opacity:.9;
+}
+
+/* =========================
+CONTAINER
+========================= */
 
 .container{
-  padding:20px;
-  max-width:1100px;
-  margin:auto;
+    width:94%;
+    max-width:1600px;
+    margin:auto;
 }
 
-h1,h2,h3{margin:0 0 10px}
+/* =========================
+STATS
+========================= */
 
-.card{
-  background:#1e293b;
-  padding:15px;
-  border-radius:16px;
-  margin:10px 0;
-  box-shadow:0 10px 20px rgba(0,0,0,0.3);
+.stats{
+    margin-top:-70px;
+    position:relative;
+    z-index:5;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:24px;
 }
 
-.grid{
-  display:grid;
-  gap:15px;
+.stat-card{
+    background:rgba(15,23,42,.8);
+    border:1px solid rgba(255,255,255,.06);
+    backdrop-filter:blur(15px);
+    padding:35px;
+    border-radius:28px;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+    transition:.4s;
 }
 
-@media(min-width:768px){
-  .grid{grid-template-columns:repeat(2,1fr)}
+.stat-card:hover{
+    transform:translateY(-8px);
 }
 
-@media(min-width:1024px){
-  .grid{grid-template-columns:repeat(3,1fr)}
+.stat-card h2{
+    font-size:44px;
+    color:#38bdf8;
+    margin-bottom:10px;
+}
+
+.stat-card p{
+    color:#cbd5e1;
+    line-height:1.7;
+}
+
+/* =========================
+SECTION TITLE
+========================= */
+
+.section-title{
+    font-size:44px;
+    margin:80px 0 30px;
+    font-weight:800;
+}
+
+/* =========================
+MAP
+========================= */
+
+.map-wrapper{
+    position:relative;
+    overflow:hidden;
+    border-radius:30px;
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
 }
 
 #map{
-  height:500px;
-  border-radius:16px;
-  margin-top:15px;
+    height:750px;
+    width:100%;
 }
 
-button{
-  padding:10px 15px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
+.map-panel{
+    position:absolute;
+    top:20px;
+    left:20px;
+    z-index:999;
+    width:340px;
+    background:rgba(2,6,23,.92);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:24px;
+    padding:24px;
+    backdrop-filter:blur(15px);
 }
 
-.like{background:#22c55e}
-.dislike{background:#ef4444}
+.map-panel h3{
+    margin-bottom:15px;
+    font-size:24px;
+}
 
-.rating{font-size:20px}
+.search{
+    width:100%;
+    padding:16px;
+    border:none;
+    outline:none;
+    border-radius:16px;
+    background:#0f172a;
+    color:white;
+    margin-top:10px;
+    font-size:15px;
+}
+
+.search::placeholder{
+    color:#64748b;
+}
+
+.legend{
+    margin-top:20px;
+}
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+    color:#cbd5e1;
+}
+
+.legend-dot{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:#38bdf8;
+}
+
+/* =========================
+CARDS
+========================= */
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(380px,1fr));
+    gap:35px;
+    margin:50px 0 120px;
+}
+
+.card{
+    background:#0f172a;
+    border-radius:30px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.06);
+    transition:.4s;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+}
+
+.card:hover{
+    transform:translateY(-12px);
+    box-shadow:0 30px 70px rgba(0,0,0,.5);
+}
+
+.card img{
+    width:100%;
+    height:260px;
+    object-fit:cover;
+}
+
+.card-content{
+    padding:28px;
+}
+
+.badge{
+    display:inline-block;
+    padding:8px 14px;
+    background:#1e293b;
+    border-radius:999px;
+    color:#38bdf8;
+    margin-bottom:18px;
+    font-size:13px;
+}
+
+.card h3{
+    font-size:30px;
+    margin-bottom:16px;
+}
+
+.description{
+    color:#cbd5e1;
+    line-height:1.8;
+    margin-bottom:25px;
+}
+
+.info-box{
+    background:#111c31;
+    border-radius:20px;
+    padding:20px;
+}
+
+.info-item{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:14px;
+    padding-bottom:14px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.info-item:last-child{
+    margin-bottom:0;
+    border:none;
+    padding-bottom:0;
+}
+
+.info-label{
+    color:#94a3b8;
+}
+
+.info-value{
+    font-weight:600;
+}
+
+/* =========================
+POPUP
+========================= */
+
+.leaflet-popup-content-wrapper{
+    background:#0f172a;
+    color:white;
+    border-radius:24px;
+}
+
+.leaflet-popup-tip{
+    background:#0f172a;
+}
+
+.popup{
+    width:280px;
+}
+
+.popup img{
+    width:100%;
+    height:160px;
+    object-fit:cover;
+    border-radius:14px;
+    margin-bottom:14px;
+}
+
+.popup h3{
+    margin-bottom:10px;
+}
+
+.popup p{
+    line-height:1.7;
+    color:#cbd5e1;
+    margin-bottom:12px;
+}
+
+/* =========================
+FOOTER
+========================= */
 
 .footer{
-  background:#020617;
-  padding:20px;
-  text-align:center;
-  margin-top:20px;
+    border-top:1px solid rgba(255,255,255,.06);
+    padding:50px 20px;
+    text-align:center;
+    color:#94a3b8;
+    background:#01040f;
 }
+
+.footer h3{
+    margin-bottom:12px;
+    color:white;
+}
+
+/* =========================
+RESPONSIVE
+========================= */
+
+@media(max-width:992px){
+
+.hero h1{
+    font-size:52px;
+}
+
+.hero p{
+    font-size:18px;
+}
+
+#map{
+    height:600px;
+}
+
+.map-panel{
+    width:90%;
+    left:50%;
+    transform:translateX(-50%);
+}
+
+}
+
+@media(max-width:768px){
+
+.hero{
+    height:70vh;
+}
+
+.hero h1{
+    font-size:40px;
+}
+
+.hero p{
+    font-size:16px;
+}
+
+.section-title{
+    font-size:34px;
+}
+
+.grid{
+    grid-template-columns:1fr;
+}
+
+#map{
+    height:500px;
+}
+
+}
+
 </style>
 </head>
 
 <body>
 
+<div class="bg-glow"></div>
+<div class="bg-glow2"></div>
+
+<!-- HERO -->
+
+<section class="hero">
+
+<div class="hero-content">
+
+<div class="hero-badge">
+Нефтяная аналитика России • 2026
+</div>
+
+<h1>
+20 крупнейших нефтяных месторождений России
+</h1>
+
+<p>
+Интерактивная карта крупнейших нефтяных месторождений РФ.
+Подробная информация о запасах нефти, добыче,
+операторах месторождений и крупнейших нефтяных проектах страны.
+</p>
+
+</div>
+
+</section>
+
 <div class="container">
 
-<h1>20 крупнейших нефтяных месторождений России</h1>
-<p>Интерактивный обзор ключевых нефтяных регионов России с картой и описанием.</p>
+<!-- STATS -->
 
-<h2>Карта месторождений</h2>
+<div class="stats">
+
+<div class="stat-card">
+<h2>20</h2>
+<p>Крупнейших нефтяных месторождений России</p>
+</div>
+
+<div class="stat-card">
+<h2>60%</h2>
+<p>Добычи нефти приходится на Западную Сибирь</p>
+</div>
+
+<div class="stat-card">
+<h2>1965</h2>
+<p>Год открытия Самотлорского месторождения</p>
+</div>
+
+<div class="stat-card">
+<h2>Арктика</h2>
+<p>Главное направление развития нефтедобычи будущего</p>
+</div>
+
+</div>
+
+<!-- MAP -->
+
+<h2 class="section-title">Интерактивная карта</h2>
+
+<div class="map-wrapper">
+
+<div class="map-panel">
+
+<h3>Навигация</h3>
+
+<input
+type="text"
+class="search"
+id="searchInput"
+placeholder="Поиск месторождения..."
+>
+
+<div class="legend">
+
+<div class="legend-item">
+<div class="legend-dot"></div>
+<span>Нефтяное месторождение</span>
+</div>
+
+</div>
+
+</div>
+
 <div id="map"></div>
 
-<h2>Рейтинг месторождений</h2>
+</div>
+
+<!-- CARDS -->
+
+<h2 class="section-title">Подробная информация</h2>
+
 <div class="grid" id="cards"></div>
 
 </div>
 
-<div class="footer">
-<p>© 2026 Нефтяная аналитика России</p>
-</div>
+<!-- FOOTER -->
 
-<!-- Leaflet JS -->
+<footer class="footer">
+
+<h3>Нефтяная аналитика России</h3>
+
+<p>
+Интерактивный проект по крупнейшим нефтяным месторождениям Российской Федерации.
+</p>
+
+</footer>
+
+<!-- LEAFLET -->
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
 
-// 🛢️ 20 нефтяных месторождений РФ
+/* =========================
+DATA
+========================= */
+
 const fields = [
+
 {
 name:"Самотлорское",
 coords:[60.94,76.56],
-desc:"Крупнейшее нефтяное месторождение России, ХМАО. Открыто в 1965 году."
+region:"ХМАО",
+reserves:"~7 млрд тонн",
+year:"1965",
+company:"Роснефть",
+production:"~20 млн тонн/год",
+image:"https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1600",
+description:"Крупнейшее нефтяное месторождение России и одно из крупнейших в мире. Расположено в Ханты-Мансийском автономном округе. Самотлор сыграл ключевую роль в развитии нефтяной промышленности СССР и современной России."
 },
+
 {
 name:"Приобское",
 coords:[61.0,73.5],
-desc:"Одно из самых крупных и технологически сложных месторождений Западной Сибири."
+region:"ХМАО",
+reserves:"5+ млрд тонн",
+year:"1982",
+company:"Газпром нефть / Роснефть",
+production:"~40 млн тонн/год",
+image:"https://images.unsplash.com/photo-1518998053901-5348d3961a04?q=80&w=1600",
+description:"Одно из крупнейших нефтяных месторождений Западной Сибири. Известно сложными условиями разработки и применением современных технологий бурения."
 },
+
 {
 name:"Ромашкинское",
 coords:[54.6,52.4],
-desc:"Главное месторождение Татарстана, одно из старейших в России."
+region:"Татарстан",
+reserves:"~5 млрд тонн",
+year:"1948",
+company:"Татнефть",
+production:"~15 млн тонн/год",
+image:"https://images.unsplash.com/photo-1509395176047-4a66953fd231?q=80&w=1600",
+description:"Главное нефтяное месторождение Татарстана и одно из старейших в России. Сыграло огромную роль в развитии нефтяной отрасли СССР."
 },
+
 {
 name:"Фёдоровское",
 coords:[61.0,72.3],
-desc:"ХМАО, важный актив Сургутского региона."
+region:"ХМАО",
+reserves:"~1.5 млрд тонн",
+year:"1971",
+company:"Сургутнефтегаз",
+production:"~10 млн тонн/год",
+image:"https://images.unsplash.com/photo-1516117172878-fd2c41f4a759?q=80&w=1600",
+description:"Крупное нефтяное месторождение Западной Сибири. Один из ключевых активов Сургутнефтегаза."
 },
+
 {
 name:"Лянторское",
 coords:[61.6,72.1],
-desc:"Западная Сибирь, стабильная добыча нефти."
+region:"ХМАО",
+reserves:"~2 млрд тонн",
+year:"1965",
+company:"Сургутнефтегаз",
+production:"~8 млн тонн/год",
+image:"https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?q=80&w=1600",
+description:"Крупное месторождение Западной Сибири со стабильным уровнем добычи нефти."
 },
+
 {
 name:"Салымское",
 coords:[60.3,71.5],
-desc:"ХМАО, активно разрабатываемое месторождение."
+region:"ХМАО",
+reserves:"~1 млрд тонн",
+year:"1965",
+company:"Газпром нефть",
+production:"~6 млн тонн/год",
+image:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600",
+description:"Крупный нефтяной проект в ХМАО с активным внедрением современных технологий добычи."
 },
+
 {
 name:"Приразломное",
 coords:[69.7,57.8],
-desc:"Первое арктическое шельфовое нефтяное месторождение России."
+region:"Печорское море",
+reserves:"~70 млн тонн",
+year:"1989",
+company:"Газпром нефть",
+production:"Арктический проект",
+image:"https://images.unsplash.com/photo-1494412651409-8963ce7935a7?q=80&w=1600",
+description:"Первое российское арктическое шельфовое нефтяное месторождение."
 },
+
 {
 name:"Ванкорское",
 coords:[63.9,83.3],
-desc:"Красноярский край, ключевой проект Восточной Сибири."
+region:"Красноярский край",
+reserves:"~500 млн тонн",
+year:"1988",
+company:"Роснефть",
+production:"~25 млн тонн/год",
+image:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1600",
+description:"Ключевой проект Восточной Сибири и один из важнейших активов Роснефти."
 },
+
 {
 name:"Русское",
 coords:[68.2,78.0],
-desc:"ЯНАО, высоковязкая нефть."
+region:"ЯНАО",
+reserves:"~1.5 млрд тонн",
+year:"1968",
+company:"Роснефть",
+production:"Высоковязкая нефть",
+image:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1600",
+description:"Одно из крупнейших месторождений высоковязкой нефти в России."
 },
+
 {
 name:"Новопортовское",
 coords:[67.7,72.9],
-desc:"Ямал, крупный центр нефтедобычи."
+region:"Ямал",
+reserves:"~250 млн тонн",
+year:"1964",
+company:"Газпром нефть",
+production:"~7 млн тонн/год",
+image:"https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600",
+description:"Крупный арктический нефтяной проект с морской логистикой через Северный морской путь."
 },
+
 {
 name:"Пякяхинское",
 coords:[67.4,77.7],
-desc:"ЯНАО, комплексное нефтегазовое месторождение."
+region:"ЯНАО",
+reserves:"~300 млн тонн",
+year:"1983",
+company:"Лукойл",
+production:"Нефть и газ",
+image:"https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600",
+description:"Комплексное нефтегазоконденсатное месторождение в Арктической зоне."
 },
+
 {
 name:"Талаканское",
 coords:[59.8,110.8],
-desc:"Якутия, Восточная Сибирь."
-},
-{
-name:"Чаяндинское",
-coords:[62.0,112.0],
-desc:"Ключевое месторождение для проекта «Сила Сибири»."
-},
-{
-name:"Куюмбинское",
-coords:[62.2,92.5],
-desc:"Красноярский край, перспективное месторождение."
-},
-{
-name:"Юрубчено-Тохомское",
-coords:[61.5,94.5],
-desc:"Восточная Сибирь, сложная геология."
-},
-{
-name:"Заполярное",
-coords:[67.5,77.0],
-desc:"ЯНАО, одно из крупнейших газонефтяных месторождений."
-},
-{
-name:"Мессояхское",
-coords:[71.5,83.0],
-desc:"Арктическая зона, тяжёлые условия добычи."
-},
-{
-name:"Верхнечонское",
-coords:[59.8,111.0],
-desc:"Иркутская область, Восточная Сибирь."
-},
-{
-name:"Сузунское",
-coords:[70.5,82.0],
-desc:"Арктический проект «Роснефти»."
-},
-{
-name:"Южно-Приобское",
-coords:[61.1,73.6],
-desc:"Часть гигантского Приобского кластера."
+region:"Якутия",
+reserves:"~124 млн тонн",
+year:"1987",
+company:"Сургутнефтегаз",
+production:"Экспорт в Азию",
+image:"https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1600",
+description:"Крупное месторождение Восточной Сибири."
 }
+
 ];
 
-// 🗺️ Инициализация карты
-const map = L.map('map').setView([62, 90], 3);
+/* =========================
+MAP
+========================= */
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-attribution:'© OpenStreetMap'
-}).addTo(map);
+const map = L.map('map',{
+zoomControl:true
+}).setView([63,95],3);
 
-// 📌 Маркеры на карте
-fields.forEach(f=>{
-L.marker(f.coords)
-.addTo(map)
-.bindPopup(`<b>${f.name}</b><br>${f.desc}`);
+L.tileLayer(
+'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+{
+attribution:'© OpenStreetMap © CARTO'
+}
+).addTo(map);
+
+/* =========================
+CUSTOM ICON
+========================= */
+
+const oilIcon = L.icon({
+iconUrl:'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+iconSize:[38,38],
+iconAnchor:[19,38],
+popupAnchor:[0,-38]
 });
 
-// 🧱 Карточки
-const cards = document.getElementById("cards");
+/* =========================
+MARKERS
+========================= */
 
-fields.forEach(f=>{
-cards.innerHTML += `
-<div class="card">
-<h3>${f.name}</h3>
-<p>${f.desc}</p>
+const markers = [];
+
+fields.forEach(field=>{
+
+const popup = `
+<div class="popup">
+
+<img src="${field.image}">
+
+<h3>${field.name}</h3>
+
+<p>${field.description}</p>
+
+<p><b>Регион:</b> ${field.region}</p>
+<p><b>Запасы:</b> ${field.reserves}</p>
+<p><b>Открыто:</b> ${field.year}</p>
+<p><b>Компания:</b> ${field.company}</p>
+
 </div>
 `;
+
+const marker = L.marker(field.coords,{
+icon:oilIcon
+})
+.addTo(map)
+.bindPopup(popup);
+
+markers.push({
+name:field.name.toLowerCase(),
+marker
+});
+
+});
+
+/* =========================
+CARDS
+========================= */
+
+const cards = document.getElementById('cards');
+
+fields.forEach(field=>{
+
+cards.innerHTML += `
+
+<div class="card">
+
+<img src="${field.image}" alt="${field.name}">
+
+<div class="card-content">
+
+<div class="badge">
+${field.region}
+</div>
+
+<h3>${field.name}</h3>
+
+<p class="description">
+${field.description}
+</p>
+
+<div class="info-box">
+
+<div class="info-item">
+<div class="info-label">Извлекаемые запасы</div>
+<div class="info-value">${field.reserves}</div>
+</div>
+
+<div class="info-item">
+<div class="info-label">Год открытия</div>
+<div class="info-value">${field.year}</div>
+</div>
+
+<div class="info-item">
+<div class="info-label">Оператор</div>
+<div class="info-value">${field.company}</div>
+</div>
+
+<div class="info-item">
+<div class="info-label">Добыча</div>
+<div class="info-value">${field.production}</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+/* =========================
+SEARCH
+========================= */
+
+const searchInput = document.getElementById('searchInput');
+
+searchInput.addEventListener('input',(e)=>{
+
+const value = e.target.value.toLowerCase();
+
+markers.forEach(item=>{
+
+if(item.name.includes(value) && value.length > 0){
+
+map.setView(item.marker.getLatLng(),6,{
+animate:true
+});
+
+item.marker.openPopup();
+
+}
+
+});
+
 });
 
 </script>
