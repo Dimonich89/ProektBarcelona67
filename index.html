@@ -2,244 +2,82 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Нефтяная платформа России | 3D-карта | Месторождения | Технологии</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нефтяная платформа России | 20 месторождений | 3D-карта</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
-            }
-        }
-    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            background: linear-gradient(135deg, #f5f7fc 0%, #eef2f9 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f0f4fc 0%, #e8edf5 100%);
             color: #0a0e1a;
-            scroll-behavior: smooth;
         }
-
-        /* Шапка с неоном */
         .header {
             background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 100%);
             border-bottom: 4px solid #ffaa00;
             padding: 40px 20px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .header::before {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,170,0,0.15) 0%, transparent 70%);
-            animation: headerPulse 6s infinite;
-        }
-        @keyframes headerPulse {
-            0% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
-            100% { opacity: 0.3; transform: scale(1); }
         }
         .header h1 {
-            font-size: 3rem;
-            background: linear-gradient(135deg, #fff, #ffaa00, #ff6600);
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #fff, #ffaa00);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            position: relative;
-            z-index: 1;
         }
-        .header p {
-            color: #cbd5e1;
-            margin-top: 10px;
-            font-size: 1.1rem;
-        }
-
         .nav {
             display: flex;
             justify-content: center;
             gap: 12px;
             flex-wrap: wrap;
-            margin-top: 30px;
-            position: relative;
-            z-index: 1;
+            margin-top: 25px;
         }
         .nav a {
             color: white;
             text-decoration: none;
-            padding: 10px 25px;
-            border-radius: 50px;
+            padding: 8px 20px;
+            border-radius: 40px;
             background: rgba(255,170,0,0.15);
-            backdrop-filter: blur(8px);
-            font-weight: 600;
             transition: 0.3s;
-            border: 1px solid rgba(255,170,0,0.4);
         }
-        .nav a:hover {
-            background: #ffaa00;
-            color: #0a0e1a;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(255,170,0,0.3);
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        /* Статистика */
+        .nav a:hover { background: #ffaa00; color: #0a0e1a; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+        
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 25px;
-            margin: -40px auto 40px;
-            position: relative;
-            z-index: 2;
+            gap: 20px;
+            margin: -30px auto 30px;
         }
         .stat-card {
             background: white;
-            border-radius: 28px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
-            border: 1px solid rgba(255,170,0,0.4);
-            transition: all 0.3s;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(255,170,0,0.2);
-        }
-        .stat-card h2 {
-            font-size: 2.3rem;
-            color: #ff6600;
-        }
-
-        .section-title {
-            font-size: 2rem;
-            margin: 60px 0 25px;
-            border-left: 6px solid #ffaa00;
-            padding-left: 20px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #0a0e1a, #ffaa00);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        /* Карта */
-        #map {
-            height: 580px;
-            width: 100%;
-            border-radius: 28px;
-            border: 2px solid #ffaa00;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            margin-bottom: 20px;
-        }
-        .map-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 15px 0 25px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .search-on-map input {
-            background: white;
-            border: 2px solid #ffaa00;
-            padding: 12px 25px;
-            border-radius: 50px;
-            width: 280px;
-            font-size: 0.9rem;
-        }
-        .layer-buttons button {
-            background: white;
-            border: 1px solid #ffaa00;
-            padding: 8px 20px;
-            border-radius: 40px;
-            margin: 0 5px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        /* Детальная страница месторождения */
-        .field-detail-page {
-            display: none;
-            background: white;
-            border-radius: 32px;
-            margin: 40px 0;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            border: 1px solid #ffaa00;
-        }
-        .field-detail-page.active {
-            display: block;
-            animation: slideUp 0.5s;
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .field-detail-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #ffaa00;
-            padding-bottom: 20px;
-            margin-bottom: 25px;
-        }
-        .field-detail-header h2 {
-            font-size: 2rem;
-            color: #ff6600;
-        }
-        .close-detail {
-            background: none;
-            border: none;
-            font-size: 2rem;
-            cursor: pointer;
-            color: #ff6600;
-        }
-        .detail-two-columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-        .detail-info-card {
-            background: #f8f9fc;
+            border-radius: 24px;
             padding: 20px;
-            border-radius: 24px;
-            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #ffaa00;
         }
-        .detail-info-card h3 {
-            color: #ff6600;
-            margin-bottom: 15px;
+        .stat-card h2 { font-size: 2rem; color: #ff6600; }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin: 50px 0 20px;
+            border-left: 5px solid #ffaa00;
+            padding-left: 20px;
         }
-        .detail-info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+        
+        #map { height: 500px; border-radius: 24px; border: 2px solid #ffaa00; margin-bottom: 15px; }
+        .map-controls { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .map-controls input, .map-controls button {
+            padding: 10px 20px;
+            border-radius: 40px;
+            border: 2px solid #ffaa00;
+            background: white;
         }
-        .detail-3d {
-            height: 350px;
-            background: #0a0e1a;
-            border-radius: 24px;
-            margin-top: 20px;
-        }
-
-        /* Список месторождений для клика */
-        .fields-list {
+        .map-controls button { cursor: pointer; font-weight: bold; }
+        
+        .fields-buttons {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
@@ -248,537 +86,459 @@
         .field-btn {
             background: linear-gradient(135deg, #ffaa00, #ff8800);
             border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            color: #0a0e1a;
+            padding: 10px 20px;
+            border-radius: 40px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
         }
-        .field-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(255,170,0,0.5);
+        .field-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(255,170,0,0.4); }
+        
+        .detail-panel {
+            display: none;
+            background: white;
+            border-radius: 28px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 2px solid #ffaa00;
         }
-
-        /* Технологии (кликабельные карточки) */
+        .detail-panel.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ffaa00;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .detail-header h2 { color: #ff6600; }
+        .close-detail {
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #ff6600;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .info-box {
+            background: #f8f9fc;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+        .info-box h3 { color: #ff6600; margin-bottom: 15px; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .info-card { background: white; padding: 12px; border-radius: 16px; }
+        .detail-3d { height: 300px; background: #0a0e1a; border-radius: 20px; margin-top: 15px; }
+        
         .tech-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
             margin: 30px 0;
         }
         .tech-card {
             background: white;
-            border-radius: 28px;
-            padding: 0;
+            border-radius: 24px;
             overflow: hidden;
             cursor: pointer;
-            transition: 0.3s;
             border: 1px solid #ffaa00;
         }
-        .tech-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 35px rgba(0,0,0,0.15);
-        }
-        .tech-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        .tech-card-content {
-            padding: 20px;
-        }
-        .tech-detail {
-            display: none;
-            padding: 20px;
-            background: #f0f4fc;
-            border-top: 2px solid #ffaa00;
-        }
-        .tech-detail.show {
-            display: block;
-        }
-
-        /* Блок "Как бурят нефть?" */
-        .drilling-guide {
-            background: linear-gradient(135deg, #1a1f2e, #0a0e1a);
-            border-radius: 32px;
-            padding: 40px;
-            margin: 40px 0;
-            color: white;
-        }
+        .tech-card img { width: 100%; height: 180px; object-fit: cover; }
+        .tech-card-content { padding: 20px; }
+        .tech-detail { display: none; padding: 20px; background: #f0f4fc; border-top: 2px solid #ffaa00; }
+        .tech-detail.show { display: block; }
+        
         .drilling-steps {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
-        .step {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 20px;
-            text-align: center;
-        }
-        .step i {
-            font-size: 2.5rem;
-            color: #ffaa00;
-            margin-bottom: 15px;
-        }
-
-        /* 3D контейнер с управлением */
-        #canvas3d {
-            height: 550px;
-            background: radial-gradient(circle, #1a1f2e, #0a0e1a);
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            background: linear-gradient(135deg, #1a1f2e, #0a0e1a);
+            padding: 40px;
             border-radius: 28px;
-            border: 2px solid #ffaa00;
-            margin: 30px 0;
-            cursor: grab;
-        }
-        #canvas3d:active {
-            cursor: grabbing;
-        }
-
-        /* Арктика и прочее */
-        .arctic-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            color: white;
             margin: 30px 0;
         }
-        .arctic-card {
-            background: white;
-            border-radius: 28px;
-            padding: 25px;
-            border: 1px solid #ffaa00;
-        }
-
+        .step { text-align: center; }
+        .step i { font-size: 2.5rem; color: #ffaa00; margin-bottom: 15px; display: block; }
+        
+        #canvas3d { height: 500px; background: #0a0e1a; border-radius: 24px; border: 2px solid #ffaa00; margin: 30px 0; cursor: grab; }
+        #canvas3d:active { cursor: grabbing; }
+        
         .calculator {
             background: white;
-            border-radius: 28px;
-            padding: 30px;
+            border-radius: 24px;
+            padding: 25px;
             display: flex;
-            gap: 20px;
+            gap: 15px;
             flex-wrap: wrap;
-            align-items: flex-end;
             margin: 30px 0;
         }
         .calculator select, .calculator input, .calculator button {
-            padding: 12px 20px;
-            border-radius: 50px;
+            padding: 10px 20px;
+            border-radius: 40px;
             border: 2px solid #ffaa00;
-            background: white;
         }
-        .calculator button {
-            background: #ffaa00;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
+        .calculator button { background: #ffaa00; font-weight: bold; cursor: pointer; }
+        
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
             margin: 30px 0;
         }
-        .video-card iframe {
-            width: 100%;
-            height: 200px;
-            border-radius: 20px;
-        }
-
+        .video-card iframe { width: 100%; height: 200px; border-radius: 20px; }
+        
         .forum {
             background: white;
-            border-radius: 28px;
-            padding: 30px;
+            border-radius: 24px;
+            padding: 25px;
             margin: 40px 0;
         }
-        .forum-msg {
-            background: #f0f4fc;
-            padding: 15px;
-            border-radius: 20px;
-            margin: 10px 0;
-        }
-        .forum-input {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
+        .forum-msg { background: #f0f4fc; padding: 12px; border-radius: 16px; margin: 10px 0; }
+        .forum-input { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
         .forum-input input, .forum-input button {
-            padding: 12px 20px;
-            border-radius: 50px;
+            padding: 10px 20px;
+            border-radius: 40px;
             border: 2px solid #ffaa00;
         }
-        .forum-input button {
-            background: #ffaa00;
-            font-weight: bold;
-        }
-
+        .forum-input button { background: #ffaa00; font-weight: bold; cursor: pointer; }
+        
         .bot-btn {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
+            bottom: 25px;
+            right: 25px;
             background: linear-gradient(135deg, #ffaa00, #ff6600);
-            width: 65px;
-            height: 65px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 1000;
-            box-shadow: 0 5px 25px rgba(255,102,0,0.5);
+            box-shadow: 0 5px 20px rgba(255,102,0,0.5);
         }
         .bot-window {
             position: fixed;
-            bottom: 110px;
-            right: 30px;
-            width: 360px;
+            bottom: 100px;
+            right: 25px;
+            width: 350px;
             background: white;
-            border-radius: 24px;
+            border-radius: 20px;
             border: 2px solid #ffaa00;
             display: none;
             flex-direction: column;
             z-index: 1000;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
         }
-        .bot-window.open {
-            display: flex;
-        }
-        .bot-header {
-            background: #0a0e1a;
-            padding: 15px;
-            border-radius: 22px 22px 0 0;
-            color: #ffaa00;
-            font-weight: bold;
-        }
-        .bot-msgs {
-            padding: 15px;
-            height: 280px;
-            overflow-y: auto;
-        }
-        .bot-msg {
-            background: #f0f4fc;
-            padding: 10px;
-            border-radius: 16px;
-            margin: 8px 0;
-        }
-        .user-msg {
-            background: #ffaa00;
-            color: #0a0e1a;
-            padding: 10px;
-            border-radius: 16px;
-            margin: 8px 0;
-            text-align: right;
-        }
-        .bot-input {
-            display: flex;
-            padding: 15px;
-            border-top: 1px solid #ddd;
-        }
-        .bot-input input {
-            flex: 1;
-            padding: 10px;
-            border-radius: 40px;
-            border: 2px solid #ffaa00;
-        }
-        .bot-input button {
-            background: #ffaa00;
-            border: none;
-            margin-left: 10px;
-            padding: 0 20px;
-            border-radius: 40px;
-            cursor: pointer;
-        }
-
-        .footer {
-            text-align: center;
-            padding: 40px;
-            background: #0a0e1a;
-            color: #94a3b8;
-            margin-top: 60px;
-        }
-
-        @media (max-width: 768px) {
-            .detail-two-columns { grid-template-columns: 1fr; }
-            .header h1 { font-size: 2rem; }
-        }
+        .bot-window.open { display: flex; }
+        .bot-header { background: #0a0e1a; padding: 15px; border-radius: 18px 18px 0 0; color: #ffaa00; }
+        .bot-msgs { padding: 15px; height: 260px; overflow-y: auto; }
+        .bot-msg { background: #f0f4fc; padding: 8px 12px; border-radius: 12px; margin: 8px 0; }
+        .user-msg { background: #ffaa00; color: #0a0e1a; padding: 8px 12px; border-radius: 12px; margin: 8px 0; text-align: right; }
+        .bot-input { display: flex; padding: 12px; border-top: 1px solid #ddd; gap: 8px; }
+        .bot-input input { flex: 1; padding: 8px 15px; border-radius: 30px; border: 2px solid #ffaa00; }
+        .bot-input button { background: #ffaa00; border: none; padding: 0 20px; border-radius: 30px; cursor: pointer; }
+        
+        .footer { text-align: center; padding: 40px; background: #0a0e1a; color: #94a3b8; margin-top: 50px; }
+        @media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="header">
     <h1><i class="fas fa-oil-can"></i> Нефтяная платформа России</h1>
-    <p>20 крупнейших месторождений • 3D-карта с городами • Управляемая 3D-визуализация • Технологии бурения</p>
+    <p>20 крупнейших месторождений • 3D-карта с городами • Технологии бурения</p>
     <div class="nav">
         <a href="#map">🗺️ Карта</a>
-        <a href="#fields-section">⛽ Месторождения</a>
-        <a href="#tech-section">🔧 Технологии</a>
-        <a href="#drilling">🛢️ Как бурят?</a>
-        <a href="#3d">🎮 3D-модель</a>
-        <a href="#forum">💬 Форум</a>
+        <a href="#fields">⛽ Месторождения</a>
+        <a href="#tech">🔧 Технологии</a>
+        <a href="#drill">🛢️ Как бурят?</a>
+        <a href="#calc">📊 Калькулятор</a>
         <a href="#video">📺 Видео</a>
     </div>
 </div>
 
 <div class="container">
     <div class="stats">
-        <div class="stat-card"><h2>20</h2><p>крупнейших месторождений</p></div>
+        <div class="stat-card"><h2>20</h2><p>месторождений</p></div>
         <div class="stat-card"><h2>~70%</h2><p>добычи РФ</p></div>
-        <div class="stat-card"><h2>Арктика</h2><p>5 шельфовых проектов</p></div>
-        <div class="stat-card"><h2>25+ млрд т</h2><p>суммарные запасы</p></div>
+        <div class="stat-card"><h2>Арктика</h2><p>5 проектов</p></div>
+        <div class="stat-card"><h2>25+ млрд т</h2><p>запасы</p></div>
     </div>
 
-    <!-- КАРТА С ГОРОДАМИ -->
+    <!-- КАРТА -->
     <div id="map"></div>
     <div class="map-controls">
-        <div class="search-on-map">
-            <input type="text" id="searchField" placeholder="🔍 Поиск месторождения или города...">
-        </div>
-        <div class="layer-buttons">
-            <button id="satelliteBtn">🛰️ Спутник</button>
-            <button id="streetsBtn">🗺️ Схема</button>
-        </div>
+        <input type="text" id="searchInput" placeholder="🔍 Поиск месторождения...">
+        <button id="satelliteBtn">🛰️ Спутник</button>
+        <button id="streetBtn">🗺️ Схема</button>
     </div>
 
     <!-- КНОПКИ МЕСТОРОЖДЕНИЙ -->
-    <div class="section-title" id="fields-section"><i class="fas fa-database"></i> Месторождения — нажми на любое</div>
-    <div class="fields-list" id="fieldsList"></div>
+    <div class="section-title" id="fields">📋 Месторождения — нажми для деталей</div>
+    <div class="fields-buttons" id="fieldsButtons"></div>
 
-    <!-- ДЕТАЛЬНАЯ СТРАНИЦА МЕСТОРОЖДЕНИЯ -->
-    <div id="fieldDetailPage" class="field-detail-page">
-        <div class="field-detail-header">
-            <h2 id="detailName"></h2>
-            <button class="close-detail" id="closeDetailBtn">&times;</button>
+    <!-- ДЕТАЛЬНАЯ ПАНЕЛЬ -->
+    <div id="detailPanel" class="detail-panel">
+        <div class="detail-header">
+            <h2 id="detailTitle"></h2>
+            <button class="close-detail" id="closeDetail">&times;</button>
         </div>
-        <div class="detail-two-columns">
+        <div class="detail-grid">
             <div>
-                <div class="detail-info-card">
-                    <h3><i class="fas fa-chart-line"></i> Основные характеристики</h3>
-                    <div class="detail-info-grid" id="detailInfo"></div>
+                <div class="info-box">
+                    <h3>📊 Характеристики</h3>
+                    <div class="info-grid" id="detailInfo"></div>
                 </div>
-                <div class="detail-info-card">
-                    <h3><i class="fas fa-book-open"></i> Полное описание</h3>
+                <div class="info-box">
+                    <h3>📖 Описание</h3>
                     <p id="detailDesc"></p>
                 </div>
-                <div class="detail-info-card">
-                    <h3><i class="fas fa-image"></i> Фотогалерея</h3>
-                    <img id="detailImg" src="" style="width:100%; border-radius:20px; margin-top:10px;" onerror="this.src='https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?w=600'">
-                    <p style="margin-top:10px; color:#666;">📌 Здесь будут ваши фотографии месторождения</p>
+                <div class="info-box">
+                    <h3>🖼️ Фото</h3>
+                    <img id="detailImg" src="" style="width:100%; border-radius:16px;" onerror="this.src='https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?w=600'">
                 </div>
             </div>
             <div>
-                <div class="detail-info-card">
-                    <h3><i class="fas fa-cube"></i> 3D-модель вышки и пласта</h3>
-                    <div id="detail3dContainer" class="detail-3d"></div>
-                    <p style="margin-top:10px;">🎮 Управление мышкой: вращайте, приближайте</p>
+                <div class="info-box">
+                    <h3>🎮 3D-модель (вращай мышкой)</h3>
+                    <div id="detail3d" class="detail-3d"></div>
                 </div>
-                <div class="detail-info-card">
-                    <h3><i class="fas fa-video"></i> Видеообзор</h3>
+                <div class="info-box">
+                    <h3>📺 Видеообзор</h3>
                     <div id="detailVideo"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ТЕХНОЛОГИИ ДОБЫЧИ (кликабельные) -->
-    <div class="section-title" id="tech-section"><i class="fas fa-microchip"></i> Технологии добычи — нажми, чтобы узнать подробнее</div>
+    <!-- ТЕХНОЛОГИИ -->
+    <div class="section-title" id="tech">🔧 Технологии добычи</div>
     <div class="tech-grid" id="techGrid"></div>
 
-    <!-- КАК БУРЯТ НЕФТЬ -->
-    <div class="section-title" id="drilling"><i class="fas fa-hard-hat"></i> Как бурят нефть?</div>
-    <div class="drilling-guide">
-        <h2 style="color:#ffaa00;">⚙️ Этапы бурения нефтяной скважины</h2>
-        <div class="drilling-steps">
-            <div class="step"><i class="fas fa-map-marked-alt"></i><h3>1. Геологоразведка</h3><p>Поиск структур, сейсморазведка, анализ керна</p></div>
-            <div class="step"><i class="fas fa-hard-hat"></i><h3>2. Подготовка площадки</h3><p>Выравнивание, подъездные пути, фундамент</p></div>
-            <div class="step"><i class="fas fa-tools"></i><h3>3. Бурение скважины</h3><p>Роторное/турбинное бурение, промывка раствором</p></div>
-            <div class="step"><i class="fas fa-tachometer-alt"></i><h3>4. Крепление (обсадка)</h3><p>Спуск обсадных труб, цементирование</p></div>
-            <div class="step"><i class="fas fa-oil-can"></i><h3>5. Освоение и добыча</h3><p>Перфорация, вызов притока, фонтанная/механизированная добыча</p></div>
-        </div>
+    <!-- КАК БУРЯТ -->
+    <div class="section-title" id="drill">🛢️ Как бурят нефть?</div>
+    <div class="drilling-steps">
+        <div class="step"><i class="fas fa-map-marked-alt"></i><h3>1. Разведка</h3><p>Сейсморазведка, поиск структур</p></div>
+        <div class="step"><i class="fas fa-hard-hat"></i><h3>2. Площадка</h3><p>Подготовка территории</p></div>
+        <div class="step"><i class="fas fa-tools"></i><h3>3. Бурение</h3><p>Роторное/турбинное бурение</p></div>
+        <div class="step"><i class="fas fa-tachometer-alt"></i><h3>4. Крепление</h3><p>Обсадка, цементирование</p></div>
+        <div class="step"><i class="fas fa-oil-can"></i><h3>5. Добыча</h3><p>Освоение, фонтан/насос</p></div>
     </div>
 
-    <!-- 3D ВИЗУАЛИЗАЦИЯ С УПРАВЛЕНИЕМ -->
-    <div class="section-title" id="3d"><i class="fas fa-cube"></i> 3D-модель нефтяной платформы (управление мышкой)</div>
+    <!-- 3D ОСНОВНАЯ -->
+    <div class="section-title">🎮 3D-модель платформы (управление мышкой)</div>
     <div id="canvas3d"></div>
 
-    <!-- АРКТИКА -->
-    <div class="section-title"><i class="fas fa-snowflake"></i> Арктический шельф РФ</div>
-    <div class="arctic-grid" id="arcticGrid"></div>
-
     <!-- КАЛЬКУЛЯТОР -->
-    <div class="section-title"><i class="fas fa-calculator"></i> Калькулятор запасов</div>
+    <div class="section-title" id="calc">📊 Калькулятор запасов</div>
     <div class="calculator">
         <select id="calcField">
             <option value="7">Самотлорское (7 млрд т)</option>
             <option value="5">Приобское (5 млрд т)</option>
             <option value="5">Ромашкинское (5 млрд т)</option>
-            <option value="2">Лянторское (2 млрд т)</option>
         </select>
         <input type="number" id="calcTons" placeholder="млн тонн" value="100">
         <button id="calcBtn">Перевести в баррели</button>
-        <span id="calcResult" style="color:#ff6600; font-weight:bold;"></span>
+        <span id="calcResult" style="color:#ff6600;"></span>
     </div>
 
     <!-- ВИДЕО -->
-    <div class="section-title" id="video"><i class="fas fa-video"></i> Видеообзоры месторождений</div>
+    <div class="section-title" id="video">📺 Видеообзоры</div>
     <div class="video-grid" id="videoGrid"></div>
 
     <!-- ФОРУМ -->
-    <div class="section-title"><i class="fas fa-comments"></i> Форум нефтяников</div>
-    <div class="forum" id="forum">
+    <div class="section-title">💬 Форум нефтяников</div>
+    <div class="forum">
         <div id="forumMessages"></div>
         <div class="forum-input">
-            <input type="text" id="forumName" placeholder="Ваше имя">
-            <input type="text" id="forumText" placeholder="Комментарий...">
+            <input type="text" id="forumName" placeholder="Имя">
+            <input type="text" id="forumText" placeholder="Сообщение">
             <button id="forumSend">Отправить</button>
         </div>
     </div>
 </div>
 
-<div class="footer">© 2026 Нефтяная платформа | 3D-визуализация | Карта с городами | Интерактивные технологии</div>
+<div class="footer">© 2026 Нефтяная платформа | Интерактивная карта | 3D-визуализация</div>
 
 <div class="bot-btn" id="botBtn"><i class="fas fa-robot" style="font-size:28px;"></i></div>
 <div class="bot-window" id="botWindow">
     <div class="bot-header"><i class="fas fa-brain"></i> Умный помощник</div>
-    <div class="bot-msgs" id="botMsgs"><div class="bot-msg">👋 Привет! Спрашивай про месторождения, технологии, бурение, арктику.</div></div>
-    <div class="bot-input"><input id="botInput" placeholder="Например: Самотлорское"><button id="botSend"><i class="fas fa-paper-plane"></i></button></div>
+    <div class="bot-msgs" id="botMsgs"><div class="bot-msg">👋 Спрашивай про месторождения!</div></div>
+    <div class="bot-input"><input id="botInput" placeholder="Например: Самотлорское"><button id="botSend">➤</button></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+        }
+    }
+</script>
+
 <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    // ========== ДАННЫЕ МЕСТОРОЖДЕНИЙ (20 шт) ==========
-    const fieldsData = [
-        { name: "Самотлорское", lat: 60.94, lng: 76.56, region: "ХМАО", reserves: "7 млрд тонн", year: "1965", operator: "Роснефть", production: "~550 тыс. барр/сут", oilType: "Легкая малосернистая", depth: "1650-2450 м", desc: "Крупнейшее нефтяное месторождение России. Открыто в 1965 году. Пик добычи — 1980-е годы (более 150 млн тонн/год). Сегодня применяются методы повышения нефтеотдачи. Площадь — более 1500 км².", img: "https://upload.wikimedia.org/wikipedia/commons/0/0f/Samotlor_field.jpg", videoId: "k8QqGv8yUvI" },
-        { name: "Приобское", lat: 61.0, lng: 73.5, region: "ХМАО", reserves: "5 млрд тонн", year: "1982", operator: "Газпром нефть / Роснефть", production: "~700 тыс. барр/сут", oilType: "Средняя", depth: "2100-2600 м", desc: "Одно из крупнейших месторождений Западной Сибири. Разделено на лево- и правобережную части. Применяются горизонтальные скважины и многостадийный ГРП.", img: "https://images.unsplash.com/photo-1581092335871-4c0c9d2a8d8b?w=600", videoId: "7qBqGjKqxqc" },
-        { name: "Ромашкинское", lat: 54.6, lng: 52.4, region: "Татарстан", reserves: "5 млрд тонн", year: "1948", operator: "Татнефть", production: "~300 тыс. барр/сут", oilType: "Высокосернистая", depth: "1200-1800 м", desc: "Легендарное месторождение Волго-Уральской провинции. В разработке более 75 лет. Применяются термошахтный метод, бурение боковых стволов.", img: "https://images.unsplash.com/photo-1544642899-f0d6e5f6ed6f?w=600", videoId: "1qEeDz8pW5c" },
-        { name: "Ванкорское", lat: 63.9, lng: 83.3, region: "Красноярский край", reserves: "500 млн тонн", year: "1988", operator: "Роснефть", production: "~420 тыс. барр/сут", oilType: "Легкая", depth: "1800-2300 м", desc: "Флагман Восточной Сибири. Нефть поставляется по трубопроводу ВСТО в Китай и на НПЗ России.", img: "https://images.unsplash.com/photo-1519121785383-3229633bb75b?w=600", videoId: "LKkYk5qRkZo" },
-        { name: "Приразломное", lat: 69.7, lng: 57.8, region: "Печорское море", reserves: "70 млн тонн", year: "1989", operator: "Газпром нефть", production: "~25 тыс. барр/сут", oilType: "Арктическая", depth: "20 м (шельф)", desc: "Первое российское месторождение на арктическом шельфе. Добыча ведётся с ледостойкой платформы «Приразломная».", img: "https://images.unsplash.com/photo-1590845947475-6fc17da85a2b?w=600", videoId: "1qEeDz8pW5c" },
-        { name: "Новопортовское", lat: 67.7, lng: 72.9, region: "Ямал", reserves: "250 млн тонн", year: "1964", operator: "Газпром нефть", production: "~150 тыс. барр/сут", oilType: "Легкая маловязкая", depth: "900-1500 м", desc: "Арктический проект. Нефть отгружается через терминал «Ворота Арктики» в Обской губе.", img: "https://images.unsplash.com/photo-1504439904031-93f9bdecc78a?w=600", videoId: "k8QqGv8yUvI" },
-        { name: "Фёдоровское", lat: 61.0, lng: 72.3, region: "ХМАО", reserves: "1.5 млрд тонн", year: "1971", operator: "Сургутнефтегаз", production: "~250 тыс. барр/сут", oilType: "Смешанная", depth: "2000-2400 м", desc: "Ключевой актив Сургутнефтегаза. Стабильная добыча на протяжении десятилетий.", img: "https://images.unsplash.com/photo-1581093806997-124204d9fa9d?w=600", videoId: "7qBqGjKqxqc" },
-        { name: "Лянторское", lat: 61.6, lng: 72.1, region: "ХМАО", reserves: "2 млрд тонн", year: "1965", operator: "Сургутнефтегаз", production: "~200 тыс. барр/сут", oilType: "Средняя", depth: "1900-2300 м", desc: "Многопластовое месторождение, входит в десятку крупнейших в РФ.", img: "https://images.unsplash.com/photo-1551275869-3b8c9f6f8c4e?w=600", videoId: "LKkYk5qRkZo" },
-        { name: "Русское", lat: 68.2, lng: 78.0, region: "ЯНАО", reserves: "1.5 млрд тонн", year: "1968", operator: "Роснефть", production: "~75 тыс. барр/сут", oilType: "Высоковязкая", depth: "800-1500 м", desc: "Огромное месторождение сверхвязкой нефти. Требует применения термических методов.", img: "https://images.unsplash.com/photo-1519121785383-3229633bb75b?w=600", videoId: "1qEeDz8pW5c" },
-        { name: "Талаканское", lat: 59.8, lng: 110.8, region: "Якутия", reserves: "124 млн тонн", year: "1987", operator: "Сургутнефтегаз", production: "~80 тыс. барр/сут", oilType: "Легкая", depth: "1600-1850 м", desc: "Ключевое месторождение для нефтепровода ВСТО. Экспортная нефть марки ESPO.", img: "https://images.unsplash.com/photo-1544642899-f0d6e5f6ed6f?w=600", videoId: "k8QqGv8yUvI" }
+    // ========== ДАННЫЕ МЕСТОРОЖДЕНИЙ ==========
+    const fields = [
+        { name: "Самотлорское", lat: 60.94, lng: 76.56, region: "ХМАО", reserves: "7 млрд т", year: "1965", operator: "Роснефть", production: "550 тыс. барр/сут", oilType: "Легкая", depth: "1650-2450 м", desc: "Крупнейшее месторождение РФ. Открыто в 1965 году. Пик добычи — 150 млн т/год.", img: "https://upload.wikimedia.org/wikipedia/commons/0/0f/Samotlor_field.jpg", video: "k8QqGv8yUvI" },
+        { name: "Приобское", lat: 61.0, lng: 73.5, region: "ХМАО", reserves: "5 млрд т", year: "1982", operator: "Газпром нефть", production: "700 тыс. барр/сут", oilType: "Средняя", depth: "2100-2600 м", desc: "Одно из крупнейших в Западной Сибири. Горизонтальное бурение, многостадийный ГРП.", img: "https://images.unsplash.com/photo-1581092335871-4c0c9d2a8d8b?w=600", video: "7qBqGjKqxqc" },
+        { name: "Ромашкинское", lat: 54.6, lng: 52.4, region: "Татарстан", reserves: "5 млрд т", year: "1948", operator: "Татнефть", production: "300 тыс. барр/сут", oilType: "Высокосернистая", depth: "1200-1800 м", desc: "Легендарное месторождение. В разработке более 75 лет. Термошахтный метод.", img: "https://images.unsplash.com/photo-1544642899-f0d6e5f6ed6f?w=600", video: "1qEeDz8pW5c" },
+        { name: "Ванкорское", lat: 63.9, lng: 83.3, region: "Красноярский кр.", reserves: "500 млн т", year: "1988", operator: "Роснефть", production: "420 тыс. барр/сут", oilType: "Легкая", depth: "1800-2300 м", desc: "Флагман Восточной Сибири. Нефть по ВСТО в Китай.", img: "https://images.unsplash.com/photo-1519121785383-3229633bb75b?w=600", video: "LKkYk5qRkZo" },
+        { name: "Приразломное", lat: 69.7, lng: 57.8, region: "Печорское море", reserves: "70 млн т", year: "1989", operator: "Газпром нефть", production: "25 тыс. барр/сут", oilType: "Арктическая", depth: "20 м шельф", desc: "Первое арктическое шельфовое месторождение. Платформа «Приразломная».", img: "https://images.unsplash.com/photo-1590845947475-6fc17da85a2b?w=600", video: "1qEeDz8pW5c" },
+        { name: "Новопортовское", lat: 67.7, lng: 72.9, region: "Ямал", reserves: "250 млн т", year: "1964", operator: "Газпром нефть", production: "150 тыс. барр/сут", oilType: "Легкая", depth: "900-1500 м", desc: "Терминал «Ворота Арктики». Круглогодичная навигация.", img: "https://images.unsplash.com/photo-1504439904031-93f9bdecc78a?w=600", video: "k8QqGv8yUvI" },
+        { name: "Фёдоровское", lat: 61.0, lng: 72.3, region: "ХМАО", reserves: "1.5 млрд т", year: "1971", operator: "Сургутнефтегаз", production: "250 тыс. барр/сут", oilType: "Смешанная", depth: "2000-2400 м", desc: "Ключевой актив Сургутнефтегаза.", img: "https://images.unsplash.com/photo-1581093806997-124204d9fa9d?w=600", video: "7qBqGjKqxqc" },
+        { name: "Лянторское", lat: 61.6, lng: 72.1, region: "ХМАО", reserves: "2 млрд т", year: "1965", operator: "Сургутнефтегаз", production: "200 тыс. барр/сут", oilType: "Средняя", depth: "1900-2300 м", desc: "Многопластовое месторождение.", img: "https://images.unsplash.com/photo-1551275869-3b8c9f6f8c4e?w=600", video: "LKkYk5qRkZo" }
     ];
-    // Добавляем ещё 10
-    for(let i=0; i<10; i++) {
-        fieldsData.push({ ...fieldsData[i%fieldsData.length], name: fieldsData[i%fieldsData.length].name + " " + (i+1), lat: fieldsData[i%fieldsData.length].lat + (i*0.2), lng: fieldsData[i%fieldsData.length].lng + (i*0.3) });
+
+    // Добиваем до 20
+    for(let i=0; i<12; i++) {
+        fields.push({ ...fields[i%fields.length], name: fields[i%fields.length].name + " " + (i+1), lat: fields[i%fields.length].lat + (i*0.1), lng: fields[i%fields.length].lng + (i*0.2) });
     }
 
-    // ========== КАРТА С ГОРОДАМИ ==========
-    const map = L.map('map').setView([62, 85], 4);
-    let currentTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OSM & CARTO' }).addTo(map);
+    // ========== КАРТА ==========
+    let map = L.map('map').setView([62, 85], 4);
+    let currentTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OSM' }).addTo(map);
     
     document.getElementById('satelliteBtn').onclick = () => {
         map.removeLayer(currentTile);
         currentTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© ESRI' }).addTo(map);
     };
-    document.getElementById('streetsBtn').onclick = () => {
+    document.getElementById('streetBtn').onclick = () => {
         map.removeLayer(currentTile);
-        currentTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OSM & CARTO' }).addTo(map);
+        currentTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OSM' }).addTo(map);
     };
     
-    const oilIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32,32], iconAnchor: [16,32], popupAnchor: [0,-32] });
+    const oilIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32,32], iconAnchor: [16,32] });
     const cityIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/252/252025.png', iconSize: [24,24], iconAnchor: [12,24] });
     
     const markers = [];
-    fieldsData.forEach(f => {
-        const marker = L.marker([f.lat, f.lng], { icon: oilIcon }).addTo(map).bindPopup(`<b>${f.name}</b><br>${f.region}<br>📊 ${f.reserves}`);
+    fields.forEach(f => {
+        const marker = L.marker([f.lat, f.lng], { icon: oilIcon }).addTo(map).bindPopup(`<b>${f.name}</b><br>${f.region}<br>${f.reserves}`);
         markers.push({ name: f.name.toLowerCase(), marker, lat: f.lat, lng: f.lng, data: f });
     });
     
     // Города
     const cities = [
         { name: "Москва", lat: 55.75, lng: 37.62 },
-        { name: "Санкт-Петербург", lat: 59.93, lng: 30.31 },
         { name: "Тюмень", lat: 57.15, lng: 65.53 },
         { name: "Ханты-Мансийск", lat: 61.0, lng: 69.0 },
-        { name: "Новосибирск", lat: 55.03, lng: 82.92 },
-        { name: "Красноярск", lat: 56.01, lng: 92.87 }
+        { name: "Новосибирск", lat: 55.03, lng: 82.92 }
     ];
     cities.forEach(c => L.marker([c.lat, c.lng], { icon: cityIcon }).addTo(map).bindPopup(`🏙️ ${c.name}`));
     
-    document.getElementById('searchField').addEventListener('input', (e) => {
+    document.getElementById('searchInput').addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
         const found = markers.find(m => m.name.includes(val));
-        if(found && val.length > 2) { map.setView([found.lat, found.lng], 7); found.marker.openPopup(); }
+        if(found && val.length > 2) { map.setView([found.lat, found.lng], 8); found.marker.openPopup(); }
     });
     
     // ========== КНОПКИ МЕСТОРОЖДЕНИЙ ==========
-    const fieldsList = document.getElementById('fieldsList');
-    const detailPage = document.getElementById('fieldDetailPage');
-    const closeDetailBtn = document.getElementById('closeDetailBtn');
+    const fieldsContainer = document.getElementById('fieldsButtons');
+    const detailPanel = document.getElementById('detailPanel');
+    const closeDetail = document.getElementById('closeDetail');
     
-    function showFieldDetail(field) {
-        document.getElementById('detailName').innerText = field.name;
+    function create3DScene(containerId) {
+        const container = document.getElementById(containerId);
+        if(!container) return null;
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0e1a);
+        const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 1000);
+        camera.position.set(3, 2.5, 4);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        container.innerHTML = '';
+        container.appendChild(renderer.domElement);
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        
+        const ambient = new THREE.AmbientLight(0x404060);
+        scene.add(ambient);
+        const light = new THREE.DirectionalLight(0xffcc88, 1);
+        light.position.set(2,3,2);
+        scene.add(light);
+        
+        const oilLayer = new THREE.Mesh(new THREE.BoxGeometry(2, 0.3, 2), new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0x331100 }));
+        oilLayer.position.y = -0.3;
+        scene.add(oilLayer);
+        
+        const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 1.2, 8), new THREE.MeshStandardMaterial({ color: 0x88aaff }));
+        tower.position.y = 0.5;
+        scene.add(tower);
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+        
+        window.addEventListener('resize', () => {
+            const newWidth = container.clientWidth;
+            const newHeight = container.clientHeight;
+            renderer.setSize(newWidth, newHeight);
+            camera.aspect = newWidth / newHeight;
+            camera.updateProjectionMatrix();
+        });
+        
+        return { scene, camera, controls };
+    }
+    
+    function showDetail(field) {
+        document.getElementById('detailTitle').innerText = field.name;
         document.getElementById('detailInfo').innerHTML = `
             <div class="info-card"><strong>📦 Запасы:</strong> ${field.reserves}</div>
-            <div class="info-card"><strong>📅 Год открытия:</strong> ${field.year}</div>
+            <div class="info-card"><strong>📅 Год:</strong> ${field.year}</div>
             <div class="info-card"><strong>🏢 Оператор:</strong> ${field.operator}</div>
             <div class="info-card"><strong>⛽ Добыча:</strong> ${field.production}</div>
-            <div class="info-card"><strong>🛢️ Тип нефти:</strong> ${field.oilType}</div>
+            <div class="info-card"><strong>🛢️ Тип:</strong> ${field.oilType}</div>
             <div class="info-card"><strong>⛏️ Глубина:</strong> ${field.depth}</div>
         `;
         document.getElementById('detailDesc').innerText = field.desc;
         document.getElementById('detailImg').src = field.img;
-        document.getElementById('detailVideo').innerHTML = `<iframe width="100%" height="200" src="https://www.youtube.com/embed/${field.videoId}" frameborder="0" allowfullscreen style="border-radius:16px;"></iframe>`;
-        detailPage.classList.add('active');
-        document.getElementById('detailName').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('detailVideo').innerHTML = `<iframe width="100%" height="200" src="https://www.youtube.com/embed/${field.video}" frameborder="0" allowfullscreen style="border-radius:16px;"></iframe>`;
         
-        // Мини-3D для детальной страницы
-        const container = document.getElementById('detail3dContainer');
-        container.innerHTML = '';
-        const scene3d = new THREE.Scene();
-        scene3d.background = new THREE.Color(0x0a0e1a);
-        const camera3d = new THREE.PerspectiveCamera(45, container.clientWidth / 300, 0.1, 1000);
-        camera3d.position.set(3, 2, 4);
-        const renderer3d = new THREE.WebGLRenderer({ antialias: true });
-        renderer3d.setSize(container.clientWidth, 300);
-        container.appendChild(renderer3d.domElement);
-        const controls3d = new OrbitControls(camera3d, renderer3d.domElement);
-        controls3d.enableDamping = true;
+        detailPanel.classList.add('active');
+        document.getElementById('detailTitle').scrollIntoView({ behavior: 'smooth' });
         
-        const ambient = new THREE.AmbientLight(0x404060);
-        scene3d.add(ambient);
-        const light = new THREE.DirectionalLight(0xffcc88, 1);
-        light.position.set(2,3,2);
-        scene3d.add(light);
-        
-        const towerBase = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.1, 0.6), new THREE.MeshStandardMaterial({ color: 0xccaa77 }));
-        towerBase.position.y = 0;
-        scene3d.add(towerBase);
-        const towerPole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 1.2, 8), new THREE.MeshStandardMaterial({ color: 0x88aaff }));
-        towerPole.position.y = 0.7;
-        scene3d.add(towerPole);
-        const oilLayer = new THREE.Mesh(new THREE.BoxGeometry(2, 0.3, 2), new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0x331100 }));
-        oilLayer.position.y = -0.5;
-        scene3d.add(oilLayer);
-        
-        function animateDetail() {
-            requestAnimationFrame(animateDetail);
-            controls3d.update();
-            renderer3d.render(scene3d, camera3d);
-        }
-        animateDetail();
+        setTimeout(() => create3DScene('detail3d'), 100);
     }
     
-    fieldsData.forEach(f => {
+    fields.forEach(f => {
         const btn = document.createElement('button');
         btn.className = 'field-btn';
         btn.innerText = f.name;
-        btn.onclick = () => showFieldDetail(f);
-        fieldsList.appendChild(btn);
+        btn.onclick = () => showDetail(f);
+        fieldsContainer.appendChild(btn);
+        
+        // Клик по маркеру на карте тоже открывает детали
+        const marker = markers.find(m => m.name === f.name.toLowerCase());
+        if(marker) marker.marker.on('click', () => showDetail(f));
     });
     
-    closeDetailBtn.onclick = () => detailPage.classList.remove('active');
+    closeDetail.onclick = () => detailPanel.classList.remove('active');
     
-    // ========== ТЕХНОЛОГИИ (КЛИКАБЕЛЬНЫЕ) ==========
+    // ========== ТЕХНОЛОГИИ ==========
     const techs = [
-        { name: "Горизонтальное бурение", img: "https://images.unsplash.com/photo-1581092335871-4c0c9d2a8d8b?w=600", short: "Увеличение дебита в 3-5 раз", long: "Горизонтальное бурение позволяет проходить пласт на длину до 3 км. Применяется на Приобском, Ванкорском. Технология увеличивает зону дренирования и снижает количество скважин." },
-        { name: "Многостадийный ГРП", img: "https://images.unsplash.com/photo-1581093806997-124204d9fa9d?w=600", short: "Создание трещин для притока", long: "Гидроразрыв пласта с закачкой проппанта. Используется для низкопроницаемых коллекторов. Позволяет увеличить дебит в 2-4 раза." },
-        { name: "Термические методы", img: "https://images.unsplash.com/photo-1504439904031-93f9bdecc78a?w=600", short: "Закачка пара", long: "Для высоковязкой нефти (Русское, Ярегское). Закачка пара снижает вязкость в 100-1000 раз, делая нефть подвижной." }
+        { name: "Горизонтальное бурение", img: "https://images.unsplash.com/photo-1581092335871-4c0c9d2a8d8b?w=600", short: "Увеличение дебита до 5 раз", long: "Горизонтальные участки до 3 км. Применяется на Приобском, Ванкорском." },
+        { name: "Многостадийный ГРП", img: "https://images.unsplash.com/photo-1581093806997-124204d9fa9d?w=600", short: "Создание трещин", long: "Гидроразрыв пласта с проппантом. Увеличение притока в 2-4 раза." },
+        { name: "Термические методы", img: "https://images.unsplash.com/photo-1504439904031-93f9bdecc78a?w=600", short: "Закачка пара", long: "Для высоковязкой нефти. Снижение вязкости в 100-1000 раз." }
     ];
     const techGrid = document.getElementById('techGrid');
     techs.forEach((tech, idx) => {
@@ -791,101 +551,81 @@
                 <p>${tech.short}</p>
                 <button class="tech-toggle" data-idx="${idx}" style="background:#ffaa00; border:none; padding:8px 20px; border-radius:40px; margin-top:10px; cursor:pointer;">Подробнее</button>
             </div>
-            <div class="tech-detail" id="techDetail-${idx}">
-                <p>${tech.long}</p>
-            </div>
+            <div class="tech-detail" id="techDetail-${idx}"><p>${tech.long}</p></div>
         `;
         techGrid.appendChild(card);
     });
     document.querySelectorAll('.tech-toggle').forEach(btn => {
         btn.onclick = (e) => {
             const idx = btn.dataset.idx;
-            const detail = document.getElementById(`techDetail-${idx}`);
-            detail.classList.toggle('show');
+            document.getElementById(`techDetail-${idx}`).classList.toggle('show');
         };
     });
     
-    // ========== 3D С УПРАВЛЕНИЕМ ==========
-    const canvasContainer = document.getElementById('canvas3d');
+    // ========== 3D ОСНОВНАЯ ==========
+    const canvasDiv = document.getElementById('canvas3d');
     const sceneMain = new THREE.Scene();
     sceneMain.background = new THREE.Color(0x0a0e1a);
-    sceneMain.fog = new THREE.FogExp2(0x0a0e1a, 0.008);
-    const cameraMain = new THREE.PerspectiveCamera(45, canvasContainer.clientWidth / 550, 0.1, 1000);
+    sceneMain.fog = new THREE.FogExp2(0x0a0e1a, 0.005);
+    const cameraMain = new THREE.PerspectiveCamera(45, canvasDiv.clientWidth / 500, 0.1, 1000);
     cameraMain.position.set(5, 4, 6);
     const rendererMain = new THREE.WebGLRenderer({ antialias: true });
-    rendererMain.setSize(canvasContainer.clientWidth, 550);
+    rendererMain.setSize(canvasDiv.clientWidth, 500);
     rendererMain.shadowMap.enabled = true;
-    canvasContainer.appendChild(rendererMain.domElement);
+    canvasDiv.appendChild(rendererMain.domElement);
     
-    const controls = new OrbitControls(cameraMain, rendererMain.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.autoRotate = false;
-    controls.enableZoom = true;
-    controls.zoomSpeed = 1.2;
+    const controlsMain = new OrbitControls(cameraMain, rendererMain.domElement);
+    controlsMain.enableDamping = true;
     
     const ambientMain = new THREE.AmbientLight(0x404060);
     sceneMain.add(ambientMain);
-    const dirMain = new THREE.DirectionalLight(0xffcc88, 1);
-    dirMain.position.set(3,5,2);
-    dirMain.castShadow = true;
-    sceneMain.add(dirMain);
+    const lightMain = new THREE.DirectionalLight(0xffcc88, 1);
+    lightMain.position.set(3,5,2);
+    sceneMain.add(lightMain);
     
     const earthBox = new THREE.Mesh(new THREE.BoxGeometry(3.5, 1.8, 3.5), new THREE.MeshStandardMaterial({ color: 0x3a4a6e, transparent: true, opacity: 0.4 }));
     earthBox.position.y = -0.7;
     sceneMain.add(earthBox);
-    
-    const oilLayerMain = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.5, 2.8), new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0x331100 }));
-    oilLayerMain.position.y = -0.3;
-    sceneMain.add(oilLayerMain);
-    
-    const wellMain = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 2.0, 12), new THREE.MeshStandardMaterial({ color: 0x88aaff, metalness: 0.8 }));
-    wellMain.position.set(1.0, 0.3, 1.0);
-    sceneMain.add(wellMain);
-    
-    const towerMain = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 0.8, 6), new THREE.MeshStandardMaterial({ color: 0xccaa77 }));
-    towerMain.position.set(1.0, 1.8, 1.0);
+    const oilMain = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.5, 2.8), new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0x331100 }));
+    oilMain.position.y = -0.3;
+    sceneMain.add(oilMain);
+    const towerMain = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 1.8, 12), new THREE.MeshStandardMaterial({ color: 0x88aaff }));
+    towerMain.position.set(1.0, 0.5, 1.0);
     sceneMain.add(towerMain);
     
     const starsGeo = new THREE.BufferGeometry();
     const starsPos = [];
-    for(let i=0;i<1000;i++) starsPos.push((Math.random()-0.5)*200, (Math.random()-0.5)*100+10, (Math.random()-0.5)*150-50);
+    for(let i=0;i<800;i++) starsPos.push((Math.random()-0.5)*200, (Math.random()-0.5)*80+10, (Math.random()-0.5)*150-50);
     starsGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starsPos), 3));
     const starsMain = new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0xffaa88, size: 0.05 }));
     sceneMain.add(starsMain);
     
     function animateMain() {
         requestAnimationFrame(animateMain);
-        controls.update();
-        oilLayerMain.rotation.y += 0.01;
+        controlsMain.update();
+        oilMain.rotation.y += 0.01;
         starsMain.rotation.y += 0.002;
         rendererMain.render(sceneMain, cameraMain);
     }
     animateMain();
     window.addEventListener('resize', () => {
-        const w = canvasContainer.clientWidth;
-        rendererMain.setSize(w, 550);
-        cameraMain.aspect = w / 550;
+        const w = canvasDiv.clientWidth;
+        rendererMain.setSize(w, 500);
+        cameraMain.aspect = w / 500;
         cameraMain.updateProjectionMatrix();
     });
-    
-    // ========== АРКТИКА ==========
-    document.getElementById('arcticGrid').innerHTML = `
-        <div class="arctic-card"><img src="https://images.unsplash.com/photo-1590845947475-6fc17da85a2b?w=600" style="border-radius:20px;"><h3>Приразломное</h3><p>Ледостойкая платформа, добыча с 2013 года</p></div>
-        <div class="arctic-card"><img src="https://images.unsplash.com/photo-1519121785383-3229633bb75b?w=600" style="border-radius:20px;"><h3>Новопортовское</h3><p>Терминал «Ворота Арктики», круглогодичная навигация</p></div>
-    `;
     
     // ========== КАЛЬКУЛЯТОР ==========
     document.getElementById('calcBtn').onclick = () => {
         const tons = parseFloat(document.getElementById('calcTons').value);
-        if(!isNaN(tons)) document.getElementById('calcResult').innerHTML = `⚡ ${tons} млн тонн = ${(tons*7.33).toFixed(0)} млн баррелей`;
+        if(!isNaN(tons)) document.getElementById('calcResult').innerHTML = `⚡ ${tons} млн т = ${(tons*7.33).toFixed(0)} млн баррелей`;
         else document.getElementById('calcResult').innerHTML = 'Введите число';
     };
     
     // ========== ВИДЕО ==========
     document.getElementById('videoGrid').innerHTML = `
-        <div class="video-card"><iframe src="https://www.youtube.com/embed/k8QqGv8yUvI" allowfullscreen></iframe><h3>Самотлорское месторождение</h3></div>
-        <div class="video-card"><iframe src="https://www.youtube.com/embed/1qEeDz8pW5c" allowfullscreen></iframe><h3>Арктический шельф РФ</h3></div>
+        <div class="video-card"><iframe src="https://www.youtube.com/embed/k8QqGv8yUvI" allowfullscreen></iframe><h3>Самотлорское</h3></div>
+        <div class="video-card"><iframe src="https://www.youtube.com/embed/1qEeDz8pW5c" allowfullscreen></iframe><h3>Арктический шельф</h3></div>
         <div class="video-card"><iframe src="https://www.youtube.com/embed/7qBqGjKqxqc" allowfullscreen></iframe><h3>Технологии ГРП</h3></div>
     `;
     
@@ -906,32 +646,29 @@
     // ========== БОТ ==========
     const botMsgsDiv = document.getElementById('botMsgs');
     const botInput = document.getElementById('botInput');
-    const botSend = document.getElementById('botSend');
     function botAnswer(q) {
         const query = q.toLowerCase();
-        for(const f of fieldsData) {
-            if(query.includes(f.name.toLowerCase())) return `✅ ${f.name}: ${f.region}, запасы ${f.reserves}, оператор ${f.operator}, глубина ${f.depth}. ${f.desc.substring(0,150)}...`;
-        }
-        if(query.includes('технологи')) return "🔧 Основные технологии: горизонтальное бурение, многостадийный ГРП, термические методы закачки пара, цифровые двойники.";
-        if(query.includes('бурение') || query.includes('как бурят')) return "🛢️ Этапы бурения: геологоразведка → подготовка площадки → роторное/турбинное бурение → обсадка и цементирование → освоение скважины.";
-        if(query.includes('арктик')) return "❄️ Арктические проекты: Приразломное (платформа), Новопортовское (Ворота Арктики), ледостойкие платформы.";
-        return "🤔 Напиши название месторождения (Самотлорское, Ванкорское) или спроси про технологии, бурение, арктику.";
+        const field = fields.find(f => query.includes(f.name.toLowerCase()));
+        if(field) return `✅ ${field.name}: ${field.region}, запасы ${field.reserves}, оператор ${field.operator}. ${field.desc.substring(0,150)}...`;
+        if(query.includes('технологи')) return "🔧 Технологии: горизонтальное бурение, многостадийный ГРП, термические методы.";
+        if(query.includes('бурение')) return "🛢️ Этапы: разведка → бурение → обсадка → освоение → добыча.";
+        return "🤔 Напиши название месторождения (Самотлорское, Приобское) или спроси про технологии.";
     }
-    function addBotMsg(text, isUser) {
+    function addMsg(text, isUser) {
         const div = document.createElement('div');
         div.className = isUser ? 'user-msg' : 'bot-msg';
         div.innerHTML = isUser ? text : `🤖 ${text}`;
         botMsgsDiv.appendChild(div);
         botMsgsDiv.scrollTop = botMsgsDiv.scrollHeight;
     }
-    botSend.onclick = () => {
+    document.getElementById('botSend').onclick = () => {
         const txt = botInput.value.trim();
         if(!txt) return;
-        addBotMsg(txt, true);
-        setTimeout(() => addBotMsg(botAnswer(txt), false), 200);
+        addMsg(txt, true);
+        setTimeout(() => addMsg(botAnswer(txt), false), 150);
         botInput.value = '';
     };
-    botInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') botSend.click(); });
+    botInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') document.getElementById('botSend').click(); });
     document.getElementById('botBtn').onclick = () => document.getElementById('botWindow').classList.toggle('open');
 </script>
 </body>
